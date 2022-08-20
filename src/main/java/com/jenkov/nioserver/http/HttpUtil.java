@@ -16,6 +16,14 @@ public class HttpUtil {
     private static final byte[] HOST           = new byte[]{'H','o','s','t'};
     private static final byte[] CONTENT_LENGTH = new byte[]{'C','o','n','t','e','n','t','-','L','e','n','g','t','h'};
 
+    /**
+     * 如果startIndex - endIndex 是完整的请求，读取完成返回-1
+     * @param src
+     * @param startIndex
+     * @param endIndex
+     * @param httpHeaders
+     * @return  最后一行LF （\n）在src 数组的下标
+     */
     public static int parseHttpRequest(byte[] src, int startIndex, int endIndex, HttpHeaders httpHeaders){
 
 

@@ -116,6 +116,14 @@ public class SocketProcessor implements Runnable {
         }
     }
 
+    /**
+     * 通过messageReader 把消息读取到sharedArray 内存中
+     * 通过根据offset + length 获取到消息构建消息对象
+     * 通过messageProcessor 处理消息（目前是默认写一个hello world响应消息）
+     * 把它添加到队列中（outboundMessageQueue）
+     * @param key
+     * @throws IOException
+     */
     private void readFromSocket(SelectionKey key) throws IOException {
         Socket socket = (Socket) key.attachment();
         socket.messageReader.read(socket, this.readByteBuffer);
@@ -148,6 +156,7 @@ public class SocketProcessor implements Runnable {
         cancelEmptySockets();
 
         // Register all sockets that *have* data and which are not yet registered.
+        // 为有数据还没有注册过可写事件的socket 注册可写事件。
         registerNonEmptySockets();
 
         // Select from the Selector.

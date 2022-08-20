@@ -97,6 +97,81 @@ com.jenkov.nioserver.SocketProcessor#writeToSockets
 
 
 
+## WriteProxy 
+
+> 具备两个属性：
+>
+> messageBuffer  写缓冲
+>
+> writeQueue 写队列
+>
+> 作用：就是从写缓冲区获取一个buffer， 然后把响应消息写入到缓存中，在入队（通道写缓冲有数据）
+
+
+
+
+
+
+
+## Http 协议
+
+> http 的首行记录请求方法 和 协议版本
+>
+> 从第二行到 空行为请求头信息
+>
+> 从空行往后是body 内容。 
+
+```http
+
+POST / HTTP/1.1
+Host: localhost:9999
+User-Agent: curl/7.57.0
+Accept: */*
+Content-Length: 11
+Content-Type: application/x-www-form-urlencoded
+
+hello=world
+```
+
+
+
+
+
+## 整体流程梳理
+
+1. 从socket队列中获取进入的连接
+2. 为连接初始化 消息读处理器， 消息写处理器，以及设置非阻塞
+3. 注册可读事件，读选择器轮询到读继续事件
+4. 处理读就绪事件，消息读取器处理字节为一个完整消息（消息存储在内存中） 
+5. MessProcessor 处理完整消息 （目前仅默认返回固定字节） 把响应数据入队到
+  消息写入器队列中（outboundMessageQueue） 
+6. MessageWriter 处理outboundMessageQueue 中消息
+7. 注册可写事件 
+8. 关闭已经响应过的sockets 
+9. 选择写就绪sockets， 数据响应客户端
+
+
+
+
+
+
+
+
+
+## 一个网络IO 框架需要考虑
+
+线程模型 
+如何读取一个完整的消息  （反序列化）
+如何写入消息 （序列化）
+如果解析不同的协议（支持相应协议特性，长连接，心跳，压缩等等）
+内存的设计（考虑支持百万连接）
+
+
+
+
+
+
+
 # 疑问点
 
 
@@ -118,12 +193,24 @@ endOfStreamReached  socketChannel 中数据被读取完了。
 
 
 
-
 **nextMessage 什么时候获取下一个**  ？ 
 
 
 
-
 **这两个集合做什么的 ？** 
-emptyToNonEmptySockets 
-nonEmptyToEmptySockets 
+emptyToNonEmptySockets   存放待注册写事件
+nonEmptyToEmptySockets  存放已经写入完成的sockets，等待关闭 
+
+
+
+> 小知识 
+>
+> **UTF-8 包含ascii码**
+>
+> UTF-8 编码把一个Unicode 字符根据数据大小编码成1-6 个字节，常用的英文被编码成1个字节， 汉字通常是3个字节。 
+>
+> CRLF 
+>
+> CR  （Carriage Return)  回车符， 用于将鼠标移动到行首，并不前进至下一行 
+>
+> LF  （Line Feed） 换行符 （\n） 

@@ -33,6 +33,16 @@ public class HttpUtilTest {
         assertEquals(httpMethod, httpHeaders.httpMethod);
     }
 
+    @Test
+    public void testRequest() throws UnsupportedEncodingException {
+        String httpRequest = "GET / HTTP/1.1\r\n" +
+                        "Content-Length: 5\r\n" +
+                        "\r\n1234";
+        byte[] source = httpRequest.getBytes("UTF-8");
+        int i = HttpUtil.parseHttpRequest(source, 0, source.length, new HttpHeaders());
+        System.out.println(i);
+    }
+
 
 
     @Test
